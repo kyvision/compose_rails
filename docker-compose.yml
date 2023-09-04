@@ -1,0 +1,34 @@
+services:
+  db:
+    container_name: rails-db
+    image: postgres:15.4
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  app:
+    container_name: rails-app
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+      args:
+        RAILS_ENV: $RAILS_ENV
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+  web:
+    container_name: rails-web
+    build:
+      context: .
+      dockerfile: ./docker/web/Dockerfile
+      args:
+        RAILS_ENV: $RAILS_ENV
+    volumes:
+      - ./public:/app/public
+      - ./log:/app/log
+    depends_on:
+      - app
+    ports:
+      - "80:80"
