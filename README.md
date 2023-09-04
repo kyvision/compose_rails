@@ -3,8 +3,8 @@
 准备
 
 ```
-mkdir my_project
-cd my_project
+mkdir rails_demo
+cd rails_demo
 git init
 git remote add compose_rails git@github.com:kyvision/compose_rails.git
 git fetch compose_rails main
@@ -13,36 +13,86 @@ git merge compose_rails/main
 
 创建Rails项目
 
-`RAILS_ENV='development' docker compose run --no-deps app rails new . --force --database=postgresql`
+`docker compose run --no-deps app rails new . --force --database=postgresql`
 
 Linux系统需要修复一下文件权限
 
 `sudo chown -R $USER:$USER .`
 
-创建镜像
+配置Redis和Sidekiq
 
-`RAILS_ENV='development' docker compose build`
+FILE: Gemfile
 
-修改数据库配置
+```
+gem 'redis'
+gem 'hiredis'
+gem 'sidekiq'
+```
+
+FILE: config/sidekiq.yml
+
+```
+development:
+  :concurrency: 5
+
+production:
+  :concurrency: 10
+
+:max_retries: 1
+
+:queues:
+  - default
+```
+
+FILE: config/database.yml
 
 ```
 default: &default
-  adapter: postgresql
+  adapter: <%= ENV.fetch('DB_ADAPTER') { 'postgresql' } %>
   encoding: unicode
-  host: db
-  username: postgres
-  password: password
-  pool: 5
+  host: <%= ENV.fetch('DB_HOST', 'localhost') %>
+  username: <%= ENV.fetch('DB_USER', 'postgres') %>
+  port: <%= ENV.fetch('DB_PORT', '5432') %>
 
 development:
   <<: *default
-  database: my_project_development
-
+  database: app_development
 
 test:
   <<: *default
-  database: my_project_test
+  database: app_test
+
+production:
+  <<: *default
+  database: app_production
 ```
+
+FILE: config/application.rb
+
+```
+config.active_job.queue_adapter = :sidekiq
+config.cache_store = :redis_cache_store, {  url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1')}
+```
+
+FILE: config/initializers/sidekiq.rb
+
+```
+Sidekiq.configure_server do |config|
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
+end
+
+Sidekiq.configure_client do |config|
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
+end
+```
+
+更新Gemfile
+
+`docker compose run --no-deps app bundle install`
+
+创建镜像
+
+`docker compose build`
 
 启动
 
