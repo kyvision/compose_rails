@@ -29,6 +29,10 @@ gem 'hiredis'
 gem 'sidekiq'
 ```
 
+安装Gemfile
+
+`docker compose run app bundle install`
+
 FILE: config/sidekiq.yml
 
 ```
@@ -85,10 +89,6 @@ Sidekiq.configure_client do |config|
   config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
 end
 ```
-
-更新Gemfile
-
-`docker compose run --no-deps app bundle install`
 
 创建镜像
 
