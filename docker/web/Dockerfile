@@ -3,6 +3,7 @@ FROM nginx:1.25.2
 RUN apt-get update -qq && apt-get install -y apache2-utils
 
 ENV RAILS_ROOT /app
+
 WORKDIR $RAILS_ROOT
 
 RUN mkdir public

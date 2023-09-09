@@ -1,18 +1,10 @@
 FROM ruby:3.2.2
 
-RUN apt-get update -qq && apt-get install -y postgresql-client imagemagick libvips \
-  && apt-get install -y nodejs npm \
-  && npm install -g yarn
-
-RUN apt-get clean -qy \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && apt-get install -y postgresql-client imagemagick
 
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install
-
-RUN gem install bundler -v 2.2.32
+RUN gem install bundler
 
 ENV BUNDLE_GEMFILE=/app/Gemfile \
   BUNDLE_JOBS=20 \
@@ -22,9 +14,8 @@ ENV BUNDLE_GEMFILE=/app/Gemfile \
 ENV PATH="${BUNDLE_BIN}:${PATH}"
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --binstubs --without development test
 
-COPY . .
+RUN bundle install --binstubs --without development test
 
 ENV RAILS_ENV production
 ENV RAILS_SERVE_STATIC_FILES 1

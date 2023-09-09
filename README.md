@@ -2,6 +2,8 @@
 
 准备
 
+方法1：
+
 ```
 mkdir rails_demo
 cd rails_demo
@@ -11,13 +13,30 @@ git fetch compose_rails main
 git merge compose_rails/main
 ```
 
+或者方法2：
+
+```
+git clone git@github.com:kyvision/compose_rails.git
+cd compose_rails
+git archive  --output "../compose_rails.tar.gz" main
+cd ..
+mkdir rails_demo
+tar zxvf compose_rails.tar.gz -C rails_demo
+```
+
 创建Rails项目
 
-`docker compose run --no-deps app rails new . --force --database=postgresql`
+```
+docker compose run --rm --no-deps app rails new . --force --database=postgresql
+
+```
 
 Linux系统需要修复一下文件权限
 
-`sudo chown -R $USER:$USER .`
+```
+sudo chown -R $USER:$USER .
+
+```
 
 配置Redis和Sidekiq
 
@@ -31,7 +50,10 @@ gem 'sidekiq'
 
 安装Gemfile
 
-`docker compose run app bundle install`
+```
+docker compose run --rm app bundle install
+
+```
 
 FILE: config/sidekiq.yml
 
@@ -92,12 +114,21 @@ end
 
 创建镜像
 
-`docker compose build`
+```
+docker compose build
+
+```
 
 启动
 
-`docker compose up`
+
+```
+docker compose up
+```
 
 创建数据库文件
 
-`docker compose run app rake db:create`
+
+```
+docker compose run -rm app rails db:create
+```
