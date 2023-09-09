@@ -38,20 +38,12 @@ sudo chown -R $USER:$USER .
 
 ```
 
-配置Redis和Sidekiq
-
-FILE: Gemfile
+安装Redis和Sidekiq
 
 ```
-gem 'redis'
-gem 'hiredis'
-gem 'sidekiq'
-```
-
-安装Gemfile
-
-```
-docker compose run --rm app bundle install
+docker compose run --rm --no-deps app bundle add redis
+docker compose run --rm --no-deps app bundle add hiredis
+docker compose run --rm --no-deps app bundle add sidekiq
 
 ```
 
